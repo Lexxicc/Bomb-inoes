@@ -56,7 +56,8 @@
       .text-xs.text-green-400\/50 { display: none; }
       #status { padding-top: 2px !important; padding-bottom: 2px !important; }
       .flex.justify-between { padding-top: 2px !important; padding-bottom: 2px !important; }
-      p[style] { display: none; }
+      /* Bug fix: scope p[style] hide to game container only, not the start overlay */
+      #game-container p[style] { display: none; }
     }
 
     /* ── Start Menu ── */
@@ -98,7 +99,7 @@
                 <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
                 <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.103</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.104</p>
         </div>
         <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 text-[12px]"><p style="color:var(--color-primary);opacity:0.5;text-align:center;margin-top:32px">Coming soon.</p></div><div class="subpanel-footer"></div></div>
         <div id="start-highscores" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>High Scores</h2></div><div class="p-5" id="highscore-list"><p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores recorded yet.</p></div><div class="subpanel-footer"></div></div>
@@ -106,7 +107,8 @@
         <div id="start-settings" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>Settings</h2></div><div class="p-6 space-y-6"><div><h3 style="color:var(--color-glow);text-transform:uppercase;font-weight:bold;font-size:0.875rem;border-bottom:1px solid var(--color-shadow);padding-bottom:8px;margin-bottom:16px;letter-spacing:0.1em">Audio</h3><div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--color-shadow)"><span>SFX Volume</span><div class="flex items-center gap-3"><input type="range" id="vol-slider" min="0" max="100" value="100" oninput="updateVolume(this.value)" style="accent-color:var(--color-primary);width:120px"><span id="vol-val" style="color:var(--color-glow);width:40px;text-align:right">100%</span></div></div><div class="flex items-center justify-between py-2"><span>Sound Effects</span><button id="sfx-toggle" onclick="toggleSFX()" class="btn-pixel text-sm px-4">ON</button></div></div></div><div class="subpanel-footer"></div></div>
     </div>
 
-  <div id="game-container" class="hidden w-full h-full" style="display:none; flex-direction:column; height:100dvh;">
+  <!-- Bug fix: removed class="hidden" so .hidden's display:none !important cannot block style="display:flex" -->
+  <div id="game-container" class="w-full h-full" style="display:none; flex-direction:column; height:100dvh;">
     <div id="status" class="text-center py-2 text-sm font-bold tracking-wider bg-black/25 flex-shrink-0"></div>
 
     <!-- P2 hand -->
@@ -137,13 +139,13 @@
       <div class="hscroll"><div id="p1" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.103</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.104</p>
   </div>
 
 <script>
     const PATCH_NOTES = [];
     const HS_KEY = 'bombinoes_hs';
-    function saveScore(score, label='') { const scores = getScores(); scores.push({ score, label, date: new Date().toLocaleDateString() }); scores.sort((a,b)=>b.score-a.score); scores.splice(10); localStorage.setItem(HS_KEY, JSON.stringify(scores)); }
+    function saveScore(score, label='') { try { const scores = getScores(); scores.push({ score, label, date: new Date().toLocaleDateString() }); scores.sort((a,b)=>b.score-a.score); scores.splice(10); localStorage.setItem(HS_KEY, JSON.stringify(scores)); } catch(e) {} }
     function getScores() { try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch { return []; } }
     function renderHighScores() { const el = document.getElementById('highscore-list'); const scores = getScores(); const primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(); const glow = getComputedStyle(document.documentElement).getPropertyValue('--color-glow').trim(); const shadow = getComputedStyle(document.documentElement).getPropertyValue('--color-shadow').trim(); if (!scores.length) { el.innerHTML = `<p style="text-align:center;color:${primary};opacity:0.5;font-size:0.875rem;margin-top:32px">No scores recorded yet.</p>`; return; } el.innerHTML = scores.map((s,i) => `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid ${shadow};font-size:0.875rem"><span style="color:${primary};width:24px;text-align:right">${i+1}.</span><span style="flex:1;color:#fff">${s.label||'—'}</span><span style="color:${glow};font-weight:bold">${s.score}</span><span style="color:${primary};opacity:0.5;font-size:0.75rem">${s.date}</span></div>`).join(''); }
     function renderPatchNotes() { const el = document.getElementById('patchnotes-list'); const primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(); const glow = getComputedStyle(document.documentElement).getPropertyValue('--color-glow').trim(); if (!PATCH_NOTES.length) { el.innerHTML = `<p style="text-align:center;color:${primary};opacity:0.5;font-size:0.875rem;margin-top:32px">No patch notes yet.</p>`; return; } el.innerHTML = PATCH_NOTES.map(p => `<div><div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px"><span style="color:${glow};font-weight:bold">${p.v}</span><span style="color:${primary};opacity:0.6;font-size:10px">${p.date}</span></div><ul style="margin:0;padding:0;list-style:none">${p.notes.map(n=>`<li style="color:#d1d5db">• ${n}</li>`).join('')}</ul></div>`).join(''); }
@@ -157,7 +159,6 @@
         document.getElementById('start-overlay').classList.add('hidden');
         const gc = document.getElementById('game-container');
         gc.style.display = 'flex';
-        gc.classList.remove('hidden');
         initGame();
     }
 
@@ -188,7 +189,8 @@ function newGame() {
       for (const t of h) if (t[0] + t[1] > best) { best = t[0] + t[1]; first = p; }
   }
 
-  G = { h: [h0, h1], yard, board: [], L: null, R: null, cur: first, sel: null, sc: [0, 0], passes: 0, over: false, win: -1 };
+  // Bug fix: initialise lastSide so render() scroll has a defined value before any tile is placed
+  G = { h: [h0, h1], yard, board: [], L: null, R: null, cur: first, sel: null, sc: [0, 0], passes: 0, over: false, win: -1, lastSide: 'right' };
   G.sc = prevSc;
 }
 
@@ -273,16 +275,12 @@ function ai() {
     const t = hand[i];
     if (t[0] === G.R || t[1] === G.R) {
       G.sel = i;
-      const prevLen = G.board.length;
       place('right');
-      if (G.board.length === prevLen && !G.over) setTimeout(ai, 500);
       return;
     }
     if (t[0] === G.L || t[1] === G.L) {
       G.sel = i;
-      const prevLen = G.board.length;
       place('left');
-      if (G.board.length === prevLen && !G.over) setTimeout(ai, 500);
       return;
     }
   }
@@ -341,7 +339,7 @@ function render() {
   // Status
   const st = document.getElementById('status');
   if (over) {
-    st.textContent = win === 0 ? '🎉 You win!' : win === 1 ? 'Player 2 wins' : "It's a draw!";
+    st.textContent = win === 0 ? 'You win!' : win === 1 ? 'Player 2 wins' : "It's a draw!";
     st.style.background = win === 0 ? 'rgba(22,163,74,.4)' : 'rgba(239,68,68,.2)';
   } else {
     st.textContent = cur === 0 ? 'Your turn — tap a tile' : 'Player 2 is thinking…';
