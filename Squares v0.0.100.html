@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Squares</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { height: 100dvh; overflow: hidden; display: flex; flex-direction: column; overscroll-behavior: none; font-family: system-ui, -apple-system, sans-serif; }
+    .hscroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .hscroll::-webkit-scrollbar { display: none; }
+    .tile {
+      display: inline-flex; align-items: center; flex-shrink: 0;
+      background: #fef9ef; border-radius: 7px; border: 2px solid #c8b98a;
+      box-shadow: 0 2px 6px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4);
+      cursor: pointer; -webkit-user-select: none; user-select: none;
+      transition: transform .12s, box-shadow .12s;
+    }
+    .tile.sel { transform: translateY(-10px); box-shadow: 0 10px 24px rgba(0,0,0,.5), 0 0 0 3px #fbbf24; }
+    .tile.dim { opacity: .4; cursor: default; pointer-events: none; }
+    .tile.dead { cursor: default; pointer-events: none; }
+    .pips { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); flex-shrink: 0; padding: 3px; }
+    .pip { border-radius: 50%; background: #1e293b; margin: auto; }
+    .seam-h { background: #c8b98a; width: 2px; align-self: stretch; flex-shrink: 0; }
+    .seam-v { background: #c8b98a; height: 2px; width: 80%; flex-shrink: 0; align-self: center; }
+    .act-btn { padding: 10px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; color: white; border: none; cursor: pointer; flex-shrink: 0; transition: transform .1s; }
+    .act-btn:active { transform: scale(.91); }
+    .end-label { color: rgba(74,222,128,.6); font-size: 12px; font-weight: 700; padding: 0 6px; flex-shrink: 0; min-width: 20px; text-align: center; }
+  </style>
+</head>
+<body class="bg-green-900 text-white">
+
+  <div id="status" class="text-center py-2 text-sm font-bold tracking-wider bg-black/25 flex-shrink-0"></div>
+
+  <!-- P2 hand -->
+  <div class="flex-shrink-0 px-3 pt-2 pb-1">
+    <div class="text-xs text-green-400/50 text-center mb-1 tracking-widest">PLAYER 2</div>
+    <div class="hscroll"><div id="opp" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
+  </div>
+
+  <!-- Info row -->
+  <div class="flex justify-between text-xs text-green-300/40 px-5 py-1 flex-shrink-0">
+    <span>Boneyard: <span id="bc">0</span></span>
+    <span id="sc">0 — 0</span>
+  </div>
+
+  <!-- Board -->
+  <div class="flex-1 flex items-center min-h-0">
+    <div id="bscroll" class="hscroll w-full">
+      <div id="board" class="flex items-center py-4 px-6" style="min-width:max-content; gap:3px;"></div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div id="acts" class="flex gap-2 justify-center px-4 py-2 flex-shrink-0" style="min-height:52px; align-items:center;"></div>
+
+  <!-- P1 hand -->
+  <div class="flex-shrink-0 px-3 pt-1 pb-2">
+    <div class="text-xs text-green-400/50 text-center mb-1 tracking-widest">YOUR HAND</div>
+    <div class="hscroll"><div id="p1" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
+  </div>
+
+  <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.100</p>
+
+<script>
+const PIPS = {
+  0:[], 1:[[1,1]], 2:[[0,2],[2,0]], 3:[[0,2],[1,1],[2,0]],
+  4:[[0,0],[0,2],[2,0],[2,2]], 5:[[0,0],[0,2],[1,1],[2,0],[2,2]],
+  6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]
+};
+
+let G;
+
+function newGame() {
+  const all = [];
+  for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) all.push([a, b]);
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.random() * (i + 1) | 0;
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  const h0 = all.slice(0, 7), h1 = all.slice(7, 14), yard = all.slice(14);
+
+  // First player: highest double, else highest pip sum
+  let first = 0, best = -1;
+  for (const [h, p] of [[h0, 0], [h1, 1]])
+    for (const t of h) if (t[0] === t[1] && t[0] > best) { best = t[0]; first = p; }
+  if (best === -1) { best = -1;
+    for (const [h, p] of [[h0, 0], [h1, 1]])
+      for (const t of h) if (t[0] + t[1] > best) { best = t[0] + t[1]; first = p; }
+  }
+
+  G = { h: [h0, h1], yard, board: [], L: null, R: null, cur: first, sel: null, sc: [0, 0], passes: 0, over: false, win: -1 };
+}
+
+// ── Helpers ──────────────────────────────────────────────
+function hasMove(p) {
+  if (G.L === null) return G.h[p].length > 0;
+  return G.h[p].some(t => t[0] === G.L || t[1] === G.L || t[0] === G.R || t[1] === G.R);
+}
+
+// ── Game logic ────────────────────────────────────────────
+function place(side) {
+  const { sel, cur } = G;
+  if (sel === null) return;
+  const hand = G.h[cur], tile = hand[sel];
+
+  if (G.board.length === 0) {
+    G.board.push({ t: tile, f: false });
+    G.L = tile[0]; G.R = tile[1];
+  } else if (side === 'left') {
+    let f;
+    if      (tile[1] === G.L) { f = false; G.L = tile[0]; }
+    else if (tile[0] === G.L) { f = true;  G.L = tile[1]; }
+    else return;
+    G.board.unshift({ t: tile, f });
+  } else {
+    let f;
+    if      (tile[0] === G.R) { f = false; G.R = tile[1]; }
+    else if (tile[1] === G.R) { f = true;  G.R = tile[0]; }
+    else return;
+    G.board.push({ t: tile, f });
+  }
+
+  hand.splice(sel, 1);
+  G.sel = null; G.passes = 0;
+  if (!hand.length) { endRound(cur); return; }
+  nextTurn();
+}
+
+function draw() {
+  if (!G.yard.length) return;
+  G.h[G.cur].push(G.yard.pop());
+  G.sel = null;
+  if (!hasMove(G.cur)) { passEnd(); return; }
+  render();
+  if (G.cur === 1) setTimeout(ai, 500);
+}
+
+function passEnd() {
+  G.sel = null; G.passes++;
+  if (G.passes >= 2) { byPips(); return; }
+  nextTurn();
+}
+
+function byPips() {
+  const p0 = G.h[0].reduce((s, t) => s + t[0] + t[1], 0);
+  const p1 = G.h[1].reduce((s, t) => s + t[0] + t[1], 0);
+  endRound(p0 <= p1 ? 0 : 1);
+}
+
+function endRound(w) { G.over = true; G.win = w; G.sc[w]++; render(); }
+function nextTurn() { G.cur = 1 - G.cur; render(); if (G.cur === 1 && !G.over) setTimeout(ai, 650); }
+
+// ── AI ────────────────────────────────────────────────────
+function ai() {
+  if (G.cur !== 1 || G.over) return;
+  const hand = G.h[1];
+
+  if (G.board.length === 0) {
+    let bi = 0, bs = -1;
+    hand.forEach((t, i) => { const s = t[0] + t[1] + (t[0] === t[1] ? 20 : 0); if (s > bs) { bs = s; bi = i; } });
+    G.sel = bi; place('right'); return;
+  }
+
+  for (let i = 0; i < hand.length; i++) {
+    const t = hand[i];
+    if (t[0] === G.R || t[1] === G.R) { G.sel = i; place('right'); return; }
+    if (t[0] === G.L || t[1] === G.L) { G.sel = i; place('left');  return; }
+  }
+
+  if (G.yard.length) { draw(); } else { passEnd(); }
+}
+
+// ── Rendering ─────────────────────────────────────────────
+function makePips(n, sz) {
+  const el = document.createElement('div');
+  el.className = 'pips';
+  el.style.width = el.style.height = sz + 'px';
+  const cells = Array(9).fill(0);
+  (PIPS[n] || []).forEach(([r, c]) => cells[r * 3 + c] = 1);
+  const pipSz = sz < 32 ? 5 : 7;
+  cells.forEach(on => {
+    const d = document.createElement('div');
+    if (on) { d.className = 'pip'; d.style.width = d.style.height = pipSz + 'px'; }
+    el.appendChild(d);
+  });
+  return el;
+}
+
+function makeTile(a, b, { sel = false, faceDown = false, vert = false, sm = false, onClick = null } = {}) {
+  const sz = sm ? 26 : 36;
+  const el = document.createElement('div');
+  el.className = 'tile' + (sel ? ' sel' : '');
+  el.style.flexDirection = vert ? 'column' : 'row';
+
+  if (faceDown) {
+    el.style.cssText += `width:${sz * 2 + 8}px;height:${sz + 6}px;background:linear-gradient(135deg,#1d4ed8,#312e81);border-color:#1e3a8a;cursor:default;pointer-events:none;`;
+  } else {
+    el.appendChild(makePips(a, sz));
+    const seam = document.createElement('div');
+    seam.className = vert ? 'seam-v' : 'seam-h';
+    el.appendChild(seam);
+    el.appendChild(makePips(b, sz));
+  }
+
+  if (onClick) el.addEventListener('click', onClick);
+  return el;
+}
+
+function mkBtn(label, bg, fn) {
+  const b = document.createElement('button');
+  b.className = 'act-btn';
+  b.style.background = bg;
+  b.textContent = label;
+  b.addEventListener('click', fn);
+  return b;
+}
+
+function render() {
+  const { h, yard, board, L, R, cur, sel, sc, over, win } = G;
+
+  // Status
+  const st = document.getElementById('status');
+  if (over) {
+    st.textContent = win === 0 ? '🎉 You win!' : win === 1 ? 'Player 2 wins' : "It's a draw!";
+    st.style.background = win === 0 ? 'rgba(22,163,74,.4)' : 'rgba(239,68,68,.2)';
+  } else {
+    st.textContent = cur === 0 ? 'Your turn — tap a tile' : 'Player 2 is thinking…';
+    st.style.background = 'rgba(0,0,0,.25)';
+  }
+  document.getElementById('bc').textContent = yard.length;
+  document.getElementById('sc').textContent = `You ${sc[0]} — ${sc[1]} P2`;
+
+  // Board
+  const bd = document.getElementById('board');
+  bd.innerHTML = '';
+  if (!board.length) {
+    const x = document.createElement('div');
+    x.style.cssText = 'color:rgba(74,222,128,.25);font-size:13px;padding:0 40px;white-space:nowrap;';
+    x.textContent = '— place the first tile —';
+    bd.appendChild(x);
+  } else {
+    const le = document.createElement('span');
+    le.className = 'end-label'; le.textContent = L;
+    bd.appendChild(le);
+
+    board.forEach(({ t, f }) => {
+      const [a, b] = f ? [t[1], t[0]] : t;
+      const el = makeTile(a, b, { vert: t[0] === t[1], sm: true });
+      el.classList.add('dead');
+      bd.appendChild(el);
+    });
+
+    const re = document.createElement('span');
+    re.className = 'end-label'; re.textContent = R;
+    bd.appendChild(re);
+  }
+  requestAnimationFrame(() => { const s = document.getElementById('bscroll'); s.scrollLeft = s.scrollWidth; });
+
+  // Opponent hand (face-down unless game over)
+  const op = document.getElementById('opp');
+  op.innerHTML = '';
+  h[1].forEach(t => op.appendChild(makeTile(t[0], t[1], { faceDown: !over })));
+
+  // Player hand
+  const p1el = document.getElementById('p1');
+  p1el.innerHTML = '';
+  const myTurn = cur === 0 && !over;
+  h[0].forEach((t, i) => {
+    const playable = board.length === 0 || t[0] === L || t[1] === L || t[0] === R || t[1] === R;
+    const el = makeTile(t[0], t[1], {
+      sel: sel === i,
+      onClick: myTurn && playable ? () => { G.sel = G.sel === i ? null : i; render(); } : null
+    });
+    if (myTurn && !playable) el.classList.add('dim');
+    if (!myTurn || (!playable && sel !== i)) el.style.cursor = 'default';
+    p1el.appendChild(el);
+  });
+
+  // Action buttons
+  const ac = document.getElementById('acts');
+  ac.innerHTML = '';
+
+  if (over) {
+    ac.appendChild(mkBtn('New Game', '#16a34a', () => { newGame(); render(); if (G.cur === 1) setTimeout(ai, 700); }));
+  } else if (cur === 0) {
+    if (sel !== null) {
+      const t = h[0][sel];
+      if (board.length === 0) {
+        ac.appendChild(mkBtn('Place Tile', '#d97706', () => place('right')));
+      } else {
+        if (t[0] === L || t[1] === L) ac.appendChild(mkBtn('← Left', '#d97706', () => place('left')));
+        if (t[0] === R || t[1] === R) ac.appendChild(mkBtn('Right →', '#d97706', () => place('right')));
+      }
+    } else if (!hasMove(0)) {
+      if (yard.length) ac.appendChild(mkBtn('Draw Tile', '#2563eb', draw));
+      else             ac.appendChild(mkBtn('Pass', '#6b7280', passEnd));
+    }
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────
+newGame();
+render();
+if (G.cur === 1) setTimeout(ai, 700);
+</script>
+</body>
+</html>
