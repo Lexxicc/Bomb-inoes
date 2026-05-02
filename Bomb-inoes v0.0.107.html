@@ -99,7 +99,7 @@
                 <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
                 <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.106</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.107</p>
         </div>
         <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 text-[12px]"><p style="color:var(--color-primary);opacity:0.5;text-align:center;margin-top:32px">Coming soon.</p></div><div class="subpanel-footer"></div></div>
         <div id="start-highscores" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>High Scores</h2></div><div class="p-5" id="highscore-list"><p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores recorded yet.</p></div><div class="subpanel-footer"></div></div>
@@ -121,6 +121,7 @@
     <div class="flex justify-between text-xs text-green-300/40 px-5 py-1 flex-shrink-0">
       <span>Boneyard: <span id="bc">0</span></span>
       <span id="sc">0 — 0</span>
+      <span id="daily-seed-display" style="opacity:0.45;font-size:10px;letter-spacing:0.05em;align-self:center;"></span>
     </div>
 
     <!-- Board -->
@@ -139,7 +140,7 @@
       <div class="hscroll"><div id="p1" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.106</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.107</p>
   </div>
 
 <script>
@@ -180,6 +181,30 @@ const PIPS = {
   6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]
 };
 
+// ── Daily seed for async competitive fairness ─────────────
+// Both players on the same calendar day get the same tile distribution.
+function getDailySeed() {
+  return parseInt(new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+}
+
+// mulberry32 — fast, seedable, high-quality 32-bit PRNG
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// Seeded Fisher-Yates shuffle (mutates array in place)
+function seededShuffle(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 let G;
 
 const MATCH_ROUNDS = 5;
@@ -193,10 +218,11 @@ function newGame() {
 
   const all = [];
   for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) all.push([a, b]);
-  for (let i = all.length - 1; i > 0; i--) {
-    const j = Math.random() * (i + 1) | 0;
-    [all[i], all[j]] = [all[j], all[i]];
-  }
+  // Use daily seed so both async players face the same tile distribution
+  const dailySeed = getDailySeed();
+  // Mix round number into seed so each round within the match is distinct but still deterministic per day
+  const roundSeed = dailySeed + (continuing ? prevRounds : 0);
+  seededShuffle(all, mulberry32(roundSeed));
   const h0 = all.slice(0, 7), h1 = all.slice(7, 14), yard = all.slice(14);
 
   // First player: highest double, else highest pip sum
@@ -282,25 +308,25 @@ function byPips() {
 }
 
 // ── Skill-based scoring ──────────────────────────────────────
-// Win by emptying hand:  10 + opponent remaining pips - own draws taken (min 10)
-// Win blocked game:       5 + pip differential        - own draws taken (min 5)
-// Draw result:            2 pts each
-// Draw penalty:          -1 per boneyard draw (already factored into base calc above)
+// Win by emptying hand:  100 + opponent remaining pips - (own draws x10)  (min 100)
+// Win blocked game:       50 + pip differential        - (own draws x10)  (min 50)
+// Draw result:            20 pts each
+// Draw penalty:          -10 per boneyard draw (already factored into base calc above)
 function calcRoundPts(w, blocked) {
   const earned = [0, 0];
   if (w === -1) {
     // True draw: small consolation
-    earned[0] = 2; earned[1] = 2;
+    earned[0] = 20; earned[1] = 20;
   } else if (blocked) {
     const [p0, p1] = G._blockedPips;
     const diff = Math.abs(p0 - p1);
-    // Winner gets 5 + pip differential, minus penalty for draws taken
-    earned[w] = Math.max(5, 5 + diff - G.draws[w]);
+    // Winner gets 50 + pip differential, minus penalty for draws taken
+    earned[w] = Math.max(50, 50 + diff - G.draws[w] * 10);
     earned[1 - w] = 0;
   } else {
-    // Win by empty hand: winner earns opponent's leftover pips + 10 bonus, minus draw penalty
+    // Win by empty hand: winner earns opponent's leftover pips + 100 bonus, minus draw penalty
     const oppPips = G.h[1 - w].reduce((s, t) => s + t[0] + t[1], 0);
-    earned[w] = Math.max(10, 10 + oppPips - G.draws[w]);
+    earned[w] = Math.max(100, 100 + oppPips - G.draws[w] * 10);
     earned[1 - w] = 0;
   }
   return earned;
@@ -422,6 +448,8 @@ function render() {
   document.getElementById('bc').textContent = yard.length;
   // Show round tally and cumulative match points for player
   document.getElementById('sc').textContent = `Rounds ${sc[0]}-${sc[1]}  |  Score: ${pts[0]}`;
+  // Show daily seed so async opponents can confirm they are on the same distribution
+  document.getElementById('daily-seed-display').textContent = `Seed: ${getDailySeed()}`;
 
   // Board
   const bd = document.getElementById('board');
