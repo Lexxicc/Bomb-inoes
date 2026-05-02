@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bomb-inoes v0.0.114</title>
+  <title>Bomb-inoes v0.0.115</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -199,7 +199,7 @@
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.114</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.115</p>
         </div>
         <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 space-y-5" style="font-family:'VT323',monospace;font-size:1.1rem;color:#d1d5db">
   <div>
@@ -214,8 +214,8 @@
   </div>
   <div>
     <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">BONEYARD</div>
-    <div>• If you can't play, tap <span style="color:var(--color-glow)">DRAW</span> to take a tile from the boneyard.</div>
-    <div>• Keep drawing until you get a tile that fits. Each draw costs you points — draw sparingly.</div>
+    <div>• If you can't play, tap <span style="color:var(--color-glow)">DRAW</span> to take one tile from the boneyard.</div>
+    <div>• If the drawn tile fits you may play it immediately; if not, your turn passes. Each draw costs you points.</div>
   </div>
   <div>
     <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">SCORING</div>
@@ -262,11 +262,11 @@
       <div><div id="p1" class="flex flex-wrap gap-2 px-2 pb-1"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.114</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.115</p>
   </div>
 
 <script>
-    (function(){ var _k='bi_wipe_v114'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
+    (function(){ var _k='bi_wipe_v115'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
 
     // ── Audio Engine ──────────────────────────────────────────
     const _ac = { ctx: null };
@@ -346,6 +346,12 @@
     }
 
     const PATCH_NOTES = [
+      { v: 'v0.0.115', date: '2026-05-02', notes: [
+        'Fix: match now ends as soon as either player wins 3 rounds — was always playing all 5',
+        'Fix: boneyard help text corrected — draw one tile per turn; if it does not fit the turn passes',
+        'Fix: mute button label was inverted — now shows MUTE when SFX is on, SFX ON when muted',
+        'Fix: removed redundant best = -1 reassignment in first-player determination logic'
+      ]},
       { v: 'v0.0.114', date: '2026-05-02', notes: [
         'New front-page logo — inline SVG with domino tiles, bomb symbols, and styled text'
       ]},
@@ -464,7 +470,7 @@ function newGame() {
   let first = 0, best = -1;
   for (const [h, p] of [[h0, 0], [h1, 1]])
     for (const t of h) if (t[0] === t[1] && t[0] > best) { best = t[0]; first = p; }
-  if (best === -1) { best = -1;
+  if (best === -1) {
     for (const [h, p] of [[h0, 0], [h1, 1]])
       for (const t of h) if (t[0] + t[1] > best) { best = t[0] + t[1]; first = p; }
   }
@@ -584,7 +590,8 @@ function endRound(w, blocked = false) {
   G._roundPts = earned;   // stash for display
   G.roundsPlayed++;
 
-  if (G.roundsPlayed >= MATCH_ROUNDS) {
+  const winsNeeded = Math.ceil((MATCH_ROUNDS + 1) / 2); // first to 3 in a 5-round match
+  if (G.roundsPlayed >= MATCH_ROUNDS || G.sc[0] >= winsNeeded || G.sc[1] >= winsNeeded) {
     G.matchOver = true;
     saveScore(G.pts[0], 'Player 1');
     // Match over sounds
@@ -776,10 +783,10 @@ function render() {
   const muteBtn = document.createElement('button');
   muteBtn.className = 'act-btn';
   muteBtn.style.cssText = 'background:#374151; min-width:60px; position:absolute; right:12px;';
-  muteBtn.textContent = _muted ? 'MUTE' : 'SFX';
+  muteBtn.textContent = _muted ? 'SFX ON' : 'MUTE';
   muteBtn.addEventListener('click', () => {
     _muted = !_muted;
-    muteBtn.textContent = _muted ? 'MUTE' : 'SFX';
+    muteBtn.textContent = _muted ? 'SFX ON' : 'MUTE';
     if (!_muted) sfxClick();
   });
   ac.style.position = 'relative';
