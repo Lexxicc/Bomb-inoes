@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bomb-inoes</title>
+  <title>Bomb-inoes v0.0.113</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -93,18 +93,40 @@
                 <div class="flex items-center justify-center gap-3 mt-2"><div class="flex-grow h-px" style="background:linear-gradient(to right,transparent,var(--color-primary))"></div><span style="font-size:1rem; color:var(--color-primary); text-transform:uppercase; letter-spacing:0.4em;">DOUBLE OR DIE</span><div class="flex-grow h-px" style="background:linear-gradient(to left,transparent,var(--color-primary))"></div></div>
             </div>
             <div class="flex flex-col">
-                <button class="start-menu-btn" onclick="startGame()"><span>Play</span><span class="ml-auto text-base opacity-40 font-sans">↵</span></button>
-                <button class="start-menu-btn" onclick="showStartPanel('howtoplay')"><span>How to Play</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-                <button class="start-menu-btn" onclick="showStartPanel('highscores')"><span>High Scores</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-                <button class="start-menu-btn" onclick="showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
-                <button class="start-menu-btn" onclick="showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+                <button class="start-menu-btn" onclick="sfxClick();startGame()"><span>Play</span><span class="ml-auto text-base opacity-40 font-sans">↵</span></button>
+                <button class="start-menu-btn" onclick="sfxClick();showStartPanel('howtoplay')"><span>How to Play</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+                <button class="start-menu-btn" onclick="sfxClick();showStartPanel('highscores')"><span>High Scores</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+                <button class="start-menu-btn" onclick="sfxClick();showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
+                <button class="start-menu-btn" onclick="sfxClick();showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.110</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.113</p>
         </div>
-        <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 text-[12px]"><p style="color:var(--color-primary);opacity:0.5;text-align:center;margin-top:32px">Coming soon.</p></div><div class="subpanel-footer"></div></div>
-        <div id="start-highscores" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>High Scores</h2></div><div class="p-5" id="highscore-list"><p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores recorded yet.</p></div><div class="subpanel-footer"></div></div>
-        <div id="start-patchnotes" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>Patch Notes</h2></div><div id="patchnotes-list" class="p-5 text-[12px] space-y-5"></div><div class="subpanel-footer"></div></div>
-        <div id="start-settings" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="showStartPanel('main')">← Back</button><h2>Settings</h2></div><div class="p-6 space-y-6"><p style="color:var(--color-primary);opacity:0.5;text-align:center;font-size:0.875rem;margin-top:32px">No settings available yet.</p></div><div class="subpanel-footer"></div></div>
+        <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 space-y-5" style="font-family:'VT323',monospace;font-size:1.1rem;color:#d1d5db">
+  <div>
+    <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">OBJECTIVE</div>
+    <p>A 5-round domino match against the AI. Win 3 rounds to take the match. The puzzle is seeded daily — everyone plays the same draw each day. Your match carries over if you close mid-game.</p>
+  </div>
+  <div>
+    <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">PLAYING</div>
+    <div>• The player with the highest double goes first. If neither holds a double, the highest pip total leads.</div>
+    <div>• Tap a tile in your hand to select it, then tap an open end of the chain that it matches.</div>
+    <div>• The chain grows from both ends — each end has a pip value that the next tile must match.</div>
+  </div>
+  <div>
+    <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">BONEYARD</div>
+    <div>• If you can't play, tap <span style="color:var(--color-glow)">DRAW</span> to take a tile from the boneyard.</div>
+    <div>• Keep drawing until you get a tile that fits. Each draw costs you points — draw sparingly.</div>
+  </div>
+  <div>
+    <div style="color:var(--color-glow);font-weight:bold;font-size:1.2rem;text-transform:uppercase;border-bottom:2px solid var(--color-shadow);padding-bottom:6px;margin-bottom:8px;letter-spacing:0.1em">SCORING</div>
+    <div>• <span style="color:var(--color-glow)">Empty hand win:</span> 100 + opponent's remaining pips − (your draws × 10), min 100.</div>
+    <div>• <span style="color:var(--color-glow)">Blocked game</span> (nobody can play): 50 + pip differential − (your draws × 10), min 50.</div>
+    <div>• Win 3 of 5 rounds to claim the match. Your total match score is saved to the leaderboard.</div>
+  </div>
+</div><div class="subpanel-footer"></div></div>
+        <div id="start-highscores" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>High Scores</h2></div><div class="p-5" id="highscore-list"><p style="text-align:center;color:var(--color-primary);opacity:0.5;font-size:0.875rem;margin-top:32px">No scores recorded yet.</p></div><div class="subpanel-footer"></div></div>
+        <div id="start-patchnotes" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>Patch Notes</h2></div><div id="patchnotes-list" class="p-5 text-[12px] space-y-5"></div><div class="subpanel-footer"></div></div>
+        <div id="start-settings" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>Settings</h2></div><div class="p-6 space-y-6"><p style="color:var(--color-primary);opacity:0.5;text-align:center;font-size:0.875rem;margin-top:32px">No settings available yet.</p></div><div class="subpanel-footer"></div></div>
     </div>
 
   <!-- Bug fix: removed class="hidden" so .hidden's display:none !important cannot block style="display:flex" -->
@@ -114,7 +136,7 @@
     <!-- P2 hand -->
     <div class="flex-shrink-0 px-3 pt-2 pb-1">
       <div class="text-xs text-green-400/50 text-center mb-1 tracking-widest">PLAYER 2</div>
-      <div class="hscroll"><div id="opp" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
+      <div><div id="opp" class="flex flex-wrap gap-2 px-2 pb-1"></div></div>
     </div>
 
     <!-- Info row -->
@@ -137,15 +159,103 @@
     <!-- P1 hand -->
     <div class="flex-shrink-0 px-3 pt-1 pb-2">
       <div class="text-xs text-green-400/50 text-center mb-1 tracking-widest">YOUR HAND</div>
-      <div class="hscroll"><div id="p1" class="flex gap-2 px-2 pb-1" style="min-width:max-content"></div></div>
+      <div><div id="p1" class="flex flex-wrap gap-2 px-2 pb-1"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.110</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.113</p>
   </div>
 
 <script>
-    (function(){ var _k='bi_wipe_v110'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
+    (function(){ var _k='bi_wipe_v113'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
+
+    // ── Audio Engine ──────────────────────────────────────────
+    const _ac = { ctx: null };
+    function _audioCtx() {
+      if (!_ac.ctx) _ac.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return _ac.ctx;
+    }
+    let _muted = false;
+    function playTone(freq, dur, type='sine', vol=0.3, delay=0) {
+      if (_muted) return;
+      try {
+        const ctx = _audioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + dur);
+      } catch(e) {}
+    }
+    function playNoise(dur, vol=0.2) {
+      if (_muted) return;
+      try {
+        const ctx = _audioCtx();
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        const src = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        src.buffer = buf; src.connect(gain); gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        src.start(); src.stop(ctx.currentTime + dur);
+      } catch(e) {}
+    }
+
+    // ── Sound Effects ─────────────────────────────────────────
+    function sfxTileDraw() {
+      // Soft shuffle: two quiet, slightly pitched noise bursts
+      playNoise(0.06, 0.08);
+      playTone(180, 0.05, 'triangle', 0.08, 0.04);
+    }
+    function sfxTilePlace() {
+      // Satisfying clack: short mid-high click with a fast decay
+      playTone(420, 0.04, 'square', 0.18);
+      playTone(260, 0.07, 'triangle', 0.12, 0.03);
+    }
+    function sfxMatch() {
+      // Bright two-tone chime
+      playTone(880, 0.15, 'sine', 0.25);
+      playTone(1100, 0.2, 'sine', 0.2, 0.1);
+    }
+    function sfxExplosion() {
+      // Noise burst for the bang, followed by a low rumble
+      playNoise(0.25, 0.55);
+      playTone(55, 0.4, 'sawtooth', 0.4, 0.05);
+      playTone(40, 0.35, 'sine', 0.3, 0.15);
+    }
+    function sfxWin() {
+      // Ascending three-note fanfare
+      playTone(523, 0.15, 'sine', 0.28);
+      playTone(659, 0.15, 'sine', 0.25, 0.18);
+      playTone(784, 0.3,  'sine', 0.3,  0.34);
+    }
+    function sfxLose() {
+      // Descending three tones — low and mournful
+      playTone(392, 0.2, 'sine', 0.25);
+      playTone(330, 0.2, 'sine', 0.22, 0.22);
+      playTone(220, 0.4, 'sine', 0.28, 0.44);
+    }
+    function sfxClick() {
+      // Short high tick for UI buttons
+      playTone(1200, 0.03, 'square', 0.15);
+    }
+
     const PATCH_NOTES = [
+      { v: 'v0.0.113', date: '2026-05-02', notes: [
+        'Add basic soundscape — Web Audio synthesised sounds',
+        'Mute/unmute toggle added'
+      ]},
+      { v: 'v0.0.112', date: '2026-05-02', notes: [
+        'Player hands now wrap to multiple rows — no more horizontal scrolling on mobile'
+      ]},
+      { v: 'v0.0.111', date: '2026-05-02', notes: [
+        'Added How to Play content'
+      ]},
       {
         v: 'v0.0.110',
         date: '2026-05-02',
@@ -303,6 +413,7 @@ function place(side) {
 
   hand.splice(sel, 1);
   G.sel = null; G.passes = 0;
+  sfxTilePlace();
   if (!hand.length) { G.winByEmpty = true; endRound(cur); return; }
   nextTurn();
 }
@@ -312,6 +423,7 @@ function draw() {
   G.h[G.cur].push(G.yard.pop());
   G.draws[G.cur]++;   // track boneyard draws for scoring penalty
   G.sel = null;
+  if (G.cur === 0) sfxTileDraw();
   if (!hasMove(G.cur)) { passEnd(); return; }
   render();
   // Bug fix: use aiTimeout so this can be cancelled if round ends before callback fires
@@ -372,6 +484,14 @@ function endRound(w, blocked = false) {
   if (G.roundsPlayed >= MATCH_ROUNDS) {
     G.matchOver = true;
     saveScore(G.pts[0], 'Player 1');
+    // Match over sounds
+    if (G.pts[0] > G.pts[1]) sfxWin();
+    else sfxLose();
+  } else {
+    // Round over sounds
+    if (w === 0) sfxMatch();
+    else if (w === 1) sfxExplosion();
+    // draw: silence is fine
   }
 
   render();
@@ -518,7 +638,7 @@ function render() {
     const playable = board.length === 0 || t[0] === L || t[1] === L || t[0] === R || t[1] === R;
     const el = makeTile(t[0], t[1], {
       sel: sel === i,
-      onClick: myTurn && playable ? () => { G.sel = G.sel === i ? null : i; render(); } : null
+      onClick: myTurn && playable ? () => { sfxClick(); G.sel = G.sel === i ? null : i; render(); } : null
     });
     if (myTurn && !playable) el.classList.add('dim');
     if (!myTurn || (!playable && sel !== i)) el.style.cursor = 'default';
@@ -531,9 +651,9 @@ function render() {
 
   if (matchOver) {
     // Bug fix: newGame() now calls clearTimeout(aiTimeout) internally; use aiTimeout for the fresh schedule
-    ac.appendChild(mkBtn('New Match', '#16a34a', () => { newGame(); render(); if (G.cur === 1) aiTimeout = setTimeout(ai, 700); }));
+    ac.appendChild(mkBtn('New Match', '#16a34a', () => { sfxClick(); newGame(); render(); if (G.cur === 1) aiTimeout = setTimeout(ai, 700); }));
   } else if (over) {
-    ac.appendChild(mkBtn('Next Round', '#16a34a', () => { newGame(); render(); if (G.cur === 1) aiTimeout = setTimeout(ai, 700); }));
+    ac.appendChild(mkBtn('Next Round', '#16a34a', () => { sfxClick(); newGame(); render(); if (G.cur === 1) aiTimeout = setTimeout(ai, 700); }));
   } else if (cur === 0) {
     if (sel !== null) {
       const t = h[0][sel];
@@ -544,10 +664,23 @@ function render() {
         if (t[0] === R || t[1] === R) ac.appendChild(mkBtn('Right →', '#d97706', () => place('right')));
       }
     } else if (!hasMove(0)) {
-      if (yard.length) ac.appendChild(mkBtn('Draw Tile', '#2563eb', draw));
-      else             ac.appendChild(mkBtn('Pass', '#6b7280', passEnd));
+      if (yard.length) ac.appendChild(mkBtn('Draw Tile', '#2563eb', () => { sfxClick(); draw(); }));
+      else             ac.appendChild(mkBtn('Pass', '#6b7280', () => { sfxClick(); passEnd(); }));
     }
   }
+
+  // Mute toggle button — always visible in the action row
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'act-btn';
+  muteBtn.style.cssText = 'background:#374151; min-width:60px; position:absolute; right:12px;';
+  muteBtn.textContent = _muted ? 'MUTE' : 'SFX';
+  muteBtn.addEventListener('click', () => {
+    _muted = !_muted;
+    muteBtn.textContent = _muted ? 'MUTE' : 'SFX';
+    if (!_muted) sfxClick();
+  });
+  ac.style.position = 'relative';
+  ac.appendChild(muteBtn);
 }
 
 // ── Init ──────────────────────────────────────────────────
