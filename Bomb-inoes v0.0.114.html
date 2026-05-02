@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bomb-inoes v0.0.113</title>
+  <title>Bomb-inoes v0.0.114</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -89,7 +89,107 @@
     <div id="start-overlay" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:#000;">
         <div id="start-main" class="menu-scroll relative z-10">
             <div class="text-center pt-4 pb-4 px-6" style="border-bottom: 4px solid var(--color-shadow);">
-                <div style="min-height:180px; display:flex; align-items:center; justify-content:center;"><h1 style="font-family:'VT323',monospace; font-size:clamp(2.5rem,10vw,5rem); color:var(--color-glow); text-shadow:3px 3px 0 var(--color-shadow); text-transform:uppercase; letter-spacing:0.12em; line-height:1.1;">BOMB-INOES</h1></div>
+                <div style="min-height:180px; display:flex; align-items:center; justify-content:center; padding:0 8px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" role="img" aria-label="Bomb-inoes" style="width:100%;max-width:520px;height:auto;max-height:130px;overflow:visible;">
+                    <defs>
+                      <filter id="bi-glow" x="-20%" y="-40%" width="140%" height="180%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                      <filter id="bi-glow-strong" x="-30%" y="-60%" width="160%" height="220%">
+                        <feGaussianBlur stdDeviation="6" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                      <!-- domino tile left: shows 3|bomb -->
+                      <!-- domino tile right: shows bomb|6 -->
+                    </defs>
+
+                    <!-- LEFT DOMINO TILE (3 | bomb) -->
+                    <g transform="translate(4,20)">
+                      <!-- tile body -->
+                      <rect x="0" y="0" width="62" height="90" rx="7" ry="7" fill="#fef9ef" stroke="#c8b98a" stroke-width="2.5"/>
+                      <!-- dividing seam -->
+                      <line x1="4" y1="45" x2="58" y2="45" stroke="#c8b98a" stroke-width="2"/>
+                      <!-- top half: 3 pips -->
+                      <circle cx="16" cy="18" r="4.5" fill="#1e293b"/>
+                      <circle cx="31" cy="30" r="4.5" fill="#1e293b"/>
+                      <circle cx="46" cy="18" r="4.5" fill="#1e293b"/>
+                      <!-- bottom half: bomb symbol -->
+                      <circle cx="31" cy="67" r="12" fill="#1e293b"/>
+                      <circle cx="31" cy="67" r="4" fill="#4ade80" opacity="0.7"/>
+                      <!-- fuse on bomb -->
+                      <path d="M31 55 Q38 48 43 51" stroke="#c8b98a" stroke-width="2" fill="none" stroke-linecap="round"/>
+                      <!-- spark -->
+                      <circle cx="44" cy="50" r="2.5" fill="#fbbf24"/>
+                      <line x1="44" y1="47" x2="46" y2="44" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+                      <line x1="46" y1="50" x2="49" y2="50" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+                      <line x1="45" y1="53" x2="47" y2="55" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- RIGHT DOMINO TILE (bomb | 6) -->
+                    <g transform="translate(454,20)">
+                      <!-- tile body -->
+                      <rect x="0" y="0" width="62" height="90" rx="7" ry="7" fill="#fef9ef" stroke="#c8b98a" stroke-width="2.5"/>
+                      <!-- dividing seam -->
+                      <line x1="4" y1="45" x2="58" y2="45" stroke="#c8b98a" stroke-width="2"/>
+                      <!-- top half: bomb symbol -->
+                      <circle cx="31" cy="23" r="12" fill="#1e293b"/>
+                      <circle cx="31" cy="23" r="4" fill="#4ade80" opacity="0.7"/>
+                      <!-- fuse -->
+                      <path d="M31 11 Q38 4 43 7" stroke="#c8b98a" stroke-width="2" fill="none" stroke-linecap="round"/>
+                      <circle cx="44" cy="6" r="2.5" fill="#fbbf24"/>
+                      <line x1="44" y1="3" x2="46" y2="0" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+                      <line x1="46" y1="6" x2="49" y2="6" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+                      <!-- bottom half: 6 pips (2x3 grid) -->
+                      <circle cx="18" cy="54" r="4" fill="#1e293b"/>
+                      <circle cx="18" cy="66" r="4" fill="#1e293b"/>
+                      <circle cx="18" cy="78" r="4" fill="#1e293b"/>
+                      <circle cx="44" cy="54" r="4" fill="#1e293b"/>
+                      <circle cx="44" cy="66" r="4" fill="#1e293b"/>
+                      <circle cx="44" cy="78" r="4" fill="#1e293b"/>
+                    </g>
+
+                    <!-- MAIN TEXT: BOMB-INOES -->
+                    <!-- Shadow layer -->
+                    <text x="263" y="92" text-anchor="middle"
+                      font-family="'VT323', monospace"
+                      font-size="78"
+                      letter-spacing="6"
+                      fill="#022c11"
+                      transform="translate(3,3)"
+                    >BOMB-INOES</text>
+                    <!-- Glow layer -->
+                    <text x="263" y="92" text-anchor="middle"
+                      font-family="'VT323', monospace"
+                      font-size="78"
+                      letter-spacing="6"
+                      fill="#fbbf24"
+                      opacity="0.25"
+                      filter="url(#bi-glow-strong)"
+                    >BOMB-INOES</text>
+                    <!-- Main text -->
+                    <text x="263" y="92" text-anchor="middle"
+                      font-family="'VT323', monospace"
+                      font-size="78"
+                      letter-spacing="6"
+                      fill="#fbbf24"
+                      filter="url(#bi-glow)"
+                    >BOMB-INOES</text>
+
+                    <!-- Decorative pip dots scattered around letters as domino flavour -->
+                    <circle cx="75" cy="12" r="3" fill="#4ade80" opacity="0.5"/>
+                    <circle cx="83" cy="22" r="2" fill="#4ade80" opacity="0.35"/>
+                    <circle cx="445" cy="12" r="3" fill="#4ade80" opacity="0.5"/>
+                    <circle cx="437" cy="22" r="2" fill="#4ade80" opacity="0.35"/>
+                    <circle cx="260" cy="106" r="2.5" fill="#fbbf24" opacity="0.4"/>
+                    <circle cx="252" cy="112" r="1.5" fill="#fbbf24" opacity="0.3"/>
+                    <circle cx="268" cy="112" r="1.5" fill="#fbbf24" opacity="0.3"/>
+
+                    <!-- Horizontal rule lines flanking the text (inside the tile gap) -->
+                    <line x1="72" y1="97" x2="160" y2="97" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+                    <line x1="363" y1="97" x2="450" y2="97" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+                  </svg>
+                </div>
                 <div class="flex items-center justify-center gap-3 mt-2"><div class="flex-grow h-px" style="background:linear-gradient(to right,transparent,var(--color-primary))"></div><span style="font-size:1rem; color:var(--color-primary); text-transform:uppercase; letter-spacing:0.4em;">DOUBLE OR DIE</span><div class="flex-grow h-px" style="background:linear-gradient(to left,transparent,var(--color-primary))"></div></div>
             </div>
             <div class="flex flex-col">
@@ -99,7 +199,7 @@
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.113</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.114</p>
         </div>
         <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 space-y-5" style="font-family:'VT323',monospace;font-size:1.1rem;color:#d1d5db">
   <div>
@@ -162,11 +262,11 @@
       <div><div id="p1" class="flex flex-wrap gap-2 px-2 pb-1"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.113</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.114</p>
   </div>
 
 <script>
-    (function(){ var _k='bi_wipe_v113'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
+    (function(){ var _k='bi_wipe_v114'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
 
     // ── Audio Engine ──────────────────────────────────────────
     const _ac = { ctx: null };
@@ -246,6 +346,9 @@
     }
 
     const PATCH_NOTES = [
+      { v: 'v0.0.114', date: '2026-05-02', notes: [
+        'New front-page logo — inline SVG with domino tiles, bomb symbols, and styled text'
+      ]},
       { v: 'v0.0.113', date: '2026-05-02', notes: [
         'Add basic soundscape — Web Audio synthesised sounds',
         'Mute/unmute toggle added'
