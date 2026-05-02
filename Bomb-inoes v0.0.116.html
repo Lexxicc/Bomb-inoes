@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bomb-inoes v0.0.115</title>
+  <title>Bomb-inoes v0.0.116</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -20,8 +20,8 @@
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
     }
-    .hscroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .hscroll::-webkit-scrollbar { display: none; }
+    .hscroll { overflow: hidden; }
+    #board { transform-origin: center center; transition: transform 0.35s ease; will-change: transform; }
     .tile {
       display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
       min-width: 44px; min-height: 44px;
@@ -199,7 +199,7 @@
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('patchnotes')"><span>Patch Notes</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
                 <button class="start-menu-btn" onclick="sfxClick();showStartPanel('settings')"><span>Settings</span><span class="ml-auto text-base opacity-40 font-sans">›</span></button>
             </div>
-            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.115</p>
+            <p style="font-size:10px; text-transform:uppercase; letter-spacing:0.35em; color:var(--color-primary); opacity:0.6; text-align:center; padding:12px 0; border-top: 1px solid var(--color-shadow);">&copy; Tacticon Studios 2026 &nbsp;&mdash;&nbsp; v0.0.116</p>
         </div>
         <div id="start-howtoplay" class="menu-scroll hidden relative z-10"><div class="subpanel-header"><button class="start-back-btn" onclick="sfxClick();showStartPanel('main')">← Back</button><h2>How to Play</h2></div><div class="p-5 space-y-5" style="font-family:'VT323',monospace;font-size:1.1rem;color:#d1d5db">
   <div>
@@ -248,8 +248,8 @@
 
     <!-- Board -->
     <div class="flex-1 flex items-center min-h-0">
-      <div id="bscroll" class="hscroll w-full">
-        <div id="board" class="flex items-center py-4 px-6" style="min-width:max-content; gap:3px;"></div>
+      <div id="bscroll" class="hscroll w-full" style="display:flex; align-items:center; justify-content:center; overflow:hidden;">
+        <div id="board" class="flex items-center py-4 px-6" style="gap:3px;"></div>
       </div>
     </div>
 
@@ -262,11 +262,11 @@
       <div><div id="p1" class="flex flex-wrap gap-2 px-2 pb-1"></div></div>
     </div>
 
-    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.115</p>
+    <p style="font-size:10px;text-align:center;opacity:.35;padding:6px;letter-spacing:.3em;text-transform:uppercase;">&copy; Tacticon Studios 2026 &mdash; v0.0.116</p>
   </div>
 
 <script>
-    (function(){ var _k='bi_wipe_v115'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
+    (function(){ var _k='bi_wipe_v116'; if(localStorage.getItem(_k)!=='1'){ localStorage.removeItem('bombinoes_hs'); localStorage.setItem(_k,'1'); } })();
 
     // ── Audio Engine ──────────────────────────────────────────
     const _ac = { ctx: null };
@@ -346,6 +346,9 @@
     }
 
     const PATCH_NOTES = [
+      { v: 'v0.0.116', date: '2026-05-02', notes: [
+        'Board auto-zooms out as pieces spread to keep all dominoes visible'
+      ]},
       { v: 'v0.0.115', date: '2026-05-02', notes: [
         'Fix: match now ends as soon as either player wins 3 rounds — was always playing all 5',
         'Fix: boneyard help text corrected — draw one tile per turn; if it does not fit the turn passes',
@@ -637,6 +640,22 @@ function ai() {
   if (G.yard.length) { draw(); } else { passEnd(); }
 }
 
+// ── Board zoom ────────────────────────────────────────────
+function updateBoardZoom() {
+  const wrap = document.getElementById('bscroll');
+  const bd = document.getElementById('board');
+  if (!wrap || !bd) return;
+  const wrapW = wrap.clientWidth;
+  const wrapH = wrap.clientHeight;
+  const bdW = bd.scrollWidth;
+  const bdH = bd.scrollHeight;
+  if (bdW === 0 || bdH === 0) return;
+  const scaleX = wrapW / bdW;
+  const scaleY = wrapH / bdH;
+  const scale = Math.max(0.3, Math.min(1, Math.min(scaleX, scaleY)));
+  bd.style.transform = 'scale(' + scale + ')';
+}
+
 // ── Rendering ─────────────────────────────────────────────
 function makePips(n, sz) {
   const el = document.createElement('div');
@@ -733,7 +752,7 @@ function render() {
     re.className = 'end-label'; re.textContent = R;
     bd.appendChild(re);
   }
-  requestAnimationFrame(() => { const s = document.getElementById('bscroll'); s.scrollLeft = G.lastSide === 'left' ? 0 : s.scrollWidth; });
+  requestAnimationFrame(() => { updateBoardZoom(); });
 
   // Opponent hand (face-down unless game over)
   const op = document.getElementById('opp');
